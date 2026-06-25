@@ -1,0 +1,42 @@
+{
+  "name": "offshoreproz-agent-api",
+  "version": "0.1.0",
+  "description": "OffshoreProz Agent API — Cloudflare Worker for agent-native company formation",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:remote": "wrangler dev --remote",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "echo 'BLOCKED: run live gate checklist before deploying to production.' && exit 1",
+    "deploy:production:force": "wrangler deploy --env production",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:parity": "node scripts/check-schema-parity.mjs",
+    "test:e2e": "node scripts/e2e-sandbox.mjs",
+    "test:all": "npm run test:parity && npm run test",
+    "types": "wrangler types",
+    "migrate:local": "wrangler d1 migrations apply offshoreproz-agent-api --local",
+    "migrate:staging": "wrangler d1 migrations apply offshoreproz-agent-api --env staging",
+    "migrate:production": "echo 'BLOCKED: migrations in production require explicit approval.' && exit 1",
+    "migrate:list": "wrangler d1 migrations list offshoreproz-agent-api",
+    "migrate:list:staging": "wrangler d1 migrations list offshoreproz-agent-api --env staging"
+  },
+  "dependencies": {
+    "hono": "^4.6.3",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.5.33",
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9",
+    "wrangler": "^4.95.0"
+  }
+}

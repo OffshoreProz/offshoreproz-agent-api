@@ -1,0 +1,75 @@
+name: offshoreproz-agent-api
+version: "1.1.0"
+description: |
+  Company formation for AI agents via MCP. Form a Wyoming LLC ($499) or Marshall Islands
+  DAO LLC ($9,500) programmatically — designed for AI agents that need legal entities.
+
+  14 tools covering the full lifecycle: self-registration, jurisdiction discovery,
+  cost estimation, formation creation, status tracking, document access, webhooks,
+  audit logs, and recovery flows.
+
+  Public tools (list/estimate/register) require no authentication.
+  Formation and management tools require: Authorization: Bearer op_test_<key>
+
+  Get a free test key instantly via the offshoreproz_register tool — no portal login needed.
+
+server:
+  type: http
+  url: https://api.offshoreproz.com/mcp
+
+authentication:
+  type: bearer
+  required: false
+  description: |
+    op_test_... for sandbox (no charges, no filings).
+    op_live_... for live (real Stripe charges + state filing).
+    Obtain instantly via the offshoreproz_register tool (no portal needed for test keys).
+
+tags:
+  - legal
+  - company-formation
+  - ai-agents
+  - fintech
+  - llc
+  - wyoming
+  - marshall-islands
+  - dao
+  - webhooks
+
+tools:
+  - name: offshoreproz_register
+    description: |
+      Create a free test API key (op_test_*) instantly — no portal login required.
+      Call this first if you have no API key. Returns key for immediate use in this session.
+      No auth required.
+  - name: offshoreproz_list_jurisdictions
+    description: List available jurisdictions with pricing and timelines. No auth required.
+  - name: offshoreproz_get_jurisdiction_requirements
+    description: Required fields for a given jurisdiction. No auth required.
+  - name: offshoreproz_estimate_cost
+    description: Estimate all-in cost and return an estimate_token (required for formation). No auth.
+  - name: offshoreproz_create_formation
+    description: |
+      Start forming a company. The beneficial_owner is the human custodian/authorized representative.
+      For AI-agent formations, pass owner_type="ai_agent" and agent_context.agent_id.
+      Requires API key + estimate_token from offshoreproz_estimate_cost.
+  - name: offshoreproz_get_formation_status
+    description: Get current formation status and next required actions. Requires API key.
+  - name: offshoreproz_list_formations
+    description: List all formations for the authenticated API key. Requires API key.
+  - name: offshoreproz_list_documents
+    description: List documents available for a formation. Requires API key.
+  - name: offshoreproz_cancel_formation
+    description: Cancel a formation (draft or pending_owner_confirmation only). Requires API key.
+  - name: offshoreproz_reissue_action_link
+    description: Reissue an expired or lost action link for the current formation step. Requires API key.
+  - name: offshoreproz_get_formation_events
+    description: Full audit trail / event log for a formation. Shows every status change, portal sync, and notes. Requires API key.
+  - name: offshoreproz_retry_formation
+    description: Retry a formation in failed or action_required status. Resets to pending_owner_confirmation. Requires API key.
+  - name: offshoreproz_register_webhook
+    description: |
+      Register a webhook URL to receive real-time formation events. Returns a signing secret (whsec_*).
+      Supports '*' for all events or specific patterns like 'formation.complete'. Requires API key.
+  - name: offshoreproz_list_webhooks
+    description: List all registered webhook endpoints and their delivery stats. Requires API key.

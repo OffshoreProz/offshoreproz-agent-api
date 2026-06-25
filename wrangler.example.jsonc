@@ -1,0 +1,167 @@
+{
+  // OffshoreProz Agent API — Cloudflare Worker
+  // Copy this file to wrangler.jsonc and fill in your own IDs.
+  //
+  // Run `wrangler types` after any binding change to regenerate worker-configuration.d.ts.
+  // Never hand-edit the generated type file.
+  //
+  // Secrets (set via `wrangler secret put <NAME> --env <staging|production>`):
+  //   API_KEY_ENCRYPTION_SECRET    — AES-256 key for PII encryption in AGENT_DB
+  //   STRIPE_SECRET_KEY            — Stripe secret key (sk_live_...)
+  //   STRIPE_WEBHOOK_SECRET        — Stripe webhook signing secret (whsec_...)
+  //   KYC_PROVIDER_KEY             — Stripe Identity API key
+  //   SIGNING_PROVIDER_KEY         — DocuSeal API key
+  //   DOCUSEAL_TEMPLATE_ID_WY      — numeric DocuSeal template ID for Wyoming OA
+  //   DOCUSEAL_TEMPLATE_ID_MI      — numeric DocuSeal template ID for MI DAO LLC OA
+  //   DOCUSEAL_WEBHOOK_SECRET      — set in DocuSeal dashboard → webhook secret
+  //   ADMIN_API_TOKEN              — bearer token for ops /admin/* endpoints
+
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "your-worker-name",
+  "main": "src/index.ts",
+
+  "compatibility_date": "2026-06-07",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "workers_dev": true,
+
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.05 },
+  },
+
+  "upload_source_maps": true,
+
+  "vars": {
+    "ENVIRONMENT": "development",
+    "API_VERSION": "v1",
+    "API_BASE_URL": "http://localhost:8787",
+    "PORTAL_URL": "https://your-portal.example.com",
+    "PORTAL_DOCS_DB_ACCOUNT_ID": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+    // Keep "false" in dev/staging — only enable in production after checklist
+    "PORTAL_SYNC_ENABLED": "false",
+    // Keep "false" until all providers (Stripe, DocuSeal, filing) are live
+    "LIVE_MODE_ENABLED": "false",
+  },
+
+  "d1_databases": [
+    {
+      "binding": "AGENT_DB",
+      "database_name": "your-agent-api-db",
+      "database_id": "YOUR_AGENT_DB_D1_ID",
+      "migrations_dir": "migrations/agent-db",
+    },
+    {
+      "binding": "PORTAL_DB",
+      "database_name": "your-portal-db",
+      "database_id": "YOUR_PORTAL_DB_D1_ID",
+    },
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "YOUR_KV_NAMESPACE_ID",
+    },
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "your-r2-bucket-name",
+    },
+  ],
+
+  "env": {
+    "staging": {
+      "name": "your-worker-name-staging",
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "API_VERSION": "v1",
+        "API_BASE_URL": "https://api-staging.yourdomain.com",
+        "PORTAL_URL": "https://your-portal.example.com",
+        "PORTAL_DOCS_DB_ACCOUNT_ID": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+        "PORTAL_SYNC_ENABLED": "false",
+        "LIVE_MODE_ENABLED": "false",
+      },
+      "routes": [
+        {
+          "pattern": "api-staging.yourdomain.com",
+          "custom_domain": true,
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "AGENT_DB",
+          "database_name": "your-agent-api-db-staging",
+          "database_id": "YOUR_STAGING_AGENT_DB_D1_ID",
+          "migrations_dir": "migrations/agent-db",
+        },
+        {
+          "binding": "PORTAL_DB",
+          "database_name": "your-portal-db",
+          "database_id": "YOUR_PORTAL_DB_D1_ID",
+        },
+      ],
+      "kv_namespaces": [{ "binding": "KV", "id": "YOUR_KV_NAMESPACE_ID" }],
+      "r2_buckets": [{ "binding": "R2", "bucket_name": "your-r2-bucket-name" }],
+      "observability": {
+        "enabled": true,
+        "logs": { "head_sampling_rate": 1 },
+        "traces": { "enabled": true, "head_sampling_rate": 0.1 },
+      },
+    },
+
+    "production": {
+      "name": "your-worker-name",
+      "workers_dev": false,
+      "vars": {
+        "ENVIRONMENT": "production",
+        "API_VERSION": "v1",
+        "API_BASE_URL": "https://api.yourdomain.com",
+        "PORTAL_URL": "https://your-portal.example.com",
+        "PORTAL_DOCS_DB_ACCOUNT_ID": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+        "PORTAL_SYNC_ENABLED": "true",
+        "LIVE_MODE_ENABLED": "true",
+      },
+      "routes": [
+        {
+          "pattern": "api.yourdomain.com",
+          "custom_domain": true,
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "AGENT_DB",
+          "database_name": "your-agent-api-db",
+          "database_id": "YOUR_AGENT_DB_D1_ID",
+          "migrations_dir": "migrations/agent-db",
+        },
+        {
+          "binding": "PORTAL_DB",
+          "database_name": "your-portal-db",
+          "database_id": "YOUR_PORTAL_DB_D1_ID",
+        },
+      ],
+      "kv_namespaces": [{ "binding": "KV", "id": "YOUR_KV_NAMESPACE_ID" }],
+      "r2_buckets": [{ "binding": "R2", "bucket_name": "your-r2-bucket-name" }],
+      "secrets": {
+        "required": [
+          "API_KEY_ENCRYPTION_SECRET",
+          "STRIPE_SECRET_KEY",
+          "STRIPE_WEBHOOK_SECRET",
+          "KYC_PROVIDER_KEY",
+          "SIGNING_PROVIDER_KEY",
+          "DOCUSEAL_WEBHOOK_SECRET",
+          "ADMIN_API_TOKEN",
+        ],
+      },
+      "observability": {
+        "enabled": true,
+        "logs": { "head_sampling_rate": 0.2 },
+        "traces": { "enabled": true, "head_sampling_rate": 0.01 },
+      },
+    },
+  },
+}
